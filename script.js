@@ -914,15 +914,7 @@ function renderProfilePage() {
     setInput('prof-goals', s.financialGoals);
 }
 
-function getProfileStats() {
-    // 1. Total Tx
-    const txCount = state.transactions.length;
 
-    // 2. Months Tracked (unique YYYY-MM)
-    const months = new Set(state.transactions.map(t => t.date.substring(0, 7)));
-
-    return { txCount, months: months.size };
-}
 
 // --- SETTINGS LOGIC ---
 
