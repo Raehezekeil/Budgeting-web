@@ -1,0 +1,18 @@
+:root {
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: clamp(1rem, 2vw, 1.5rem);
+  --spacing-lg: clamp(2rem, 4vw, 3rem);
+  
+  /* Fluid Typography */
+  --font-xs: clamp(0.75rem, 1vw, 0.875rem);
+  --font-sm: clamp(0.875rem, 1.5vw, 1rem);
+  --font-md: clamp(1rem, 2vw, 1.125rem);
+  --font-lg: clamp(1.25rem, 2.5vw, 1.5rem);
+  --font-xl: clamp(1.5rem, 3vw, 2rem);
+  --font-display: clamp(2rem, 5vw, 3.5rem);
+  
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+}

@@ -1,0 +1,496 @@
+/*
+Theme Name: Dashlite - Bootstrap 5 HTML/CSS Admin Dashboard
+Theme URI: https://templatesjungle.com/
+Author: TemplatesJungle
+Author URI: https://templatesjungle.com/
+Description: dashlite is specially designed product packaged for Solar Energy by TemplatesJungle.
+Version: 1.1
+*/
+
+/*--------------------------------------------------------------
+This is main CSS file that contains custom style rules used in this template
+--------------------------------------------------------------*/
+
+/*------------------------------------*\
+    Table of contents
+\*------------------------------------*/
+
+/*------------------------------------------------
+
+CSS STRUCTURE:
+
+1. VARIABLES
+
+2. GENERAL TYPOGRAPHY
+  2.1 General Styles
+
+3. CONTENT ELEMENTS
+  - Iconify
+  - Form
+  - Pagination
+- Accordian
+- Form
+
+4. SITE STRUCTURE
+  4.1 Sidebar
+  4.2 Chart-specific
+  4.3 Home Page
+
+5. PAGES STYLE
+  5.1 Product Detail page
+  
+
+  
+/*--------------------------------------------------------------
+/** 1. VARIABLES
+--------------------------------------------------------------*/
+
+:root {
+  --primary-color: #212529;
+  --secondary-color: #82868b;
+  --success-color: #88B267;
+  --danger-color: #CF5B5B;
+  --warning-color: #F39C12;
+  --info-color: #5DBED3;
+  --dark-color: #484848;
+  --light-color: #FFFFFF;
+
+  --bs-primary: #1A1B1C;
+  --bs-secondary: #6c757d;
+
+  --bs-success: #88B267;
+  --bs-info: #5DBED3;
+  --bs-warning: #F39C12;
+  --bs-danger: #CF5B5B;
+
+  --bs-light: #f8f9fa;
+  --bs-dark: #212529;
+
+  --bs-primary-rgb: 26, 27, 28;
+  --bs-secondary-rgb: 108, 117, 125;
+
+  --bs-success-rgb: 136, 178, 103;
+  --bs-info-rgb: 93, 190, 211;
+  --bs-warning-rgb: 243, 156, 18;
+  --bs-danger-rgb: 207, 91, 91;
+
+  --bs-light-rgb: 248, 249, 250;
+  --bs-dark-rgb: 33, 37, 41;
+
+  --sidebar-width: 250px;
+  --topbar-height: 60px;
+}
+
+/*----------------------------------------------*/
+/* 2 GENERAL TYPOGRAPHY
+/*----------------------------------------------*/
+
+/* 2.1 General Styles
+/*----------------------------------------------*/
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Source Sans 3", sans-serif;
+  background-color: #F4F4F4;
+  overflow-x: hidden;
+  color: #989898;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--dark-color);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+
+/*--------------------------------------------------------------
+/** 3.CONTENT ELEMENTS
+--------------------------------------------------------------*/
+
+/* Iconify Styles 
+------------------------------------------------------------- */
+iconify-icon {
+  vertical-align: top;
+}
+
+/* Progress Bar Styles 
+------------------------------------------------------------- */
+.progress-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--bs-progress-bar-color);
+  text-align: center;
+  white-space: nowrap;
+  background-color: #A1BFD3;
+  transition: var(--bs-progress-bar-transition);
+}
+
+.progress-thin {
+  height: 6px;
+}
+
+/* Pagination Styles 
+------------------------------------------------------------- */
+.pagination {
+  --bs-pagination-color: var(--black-color);
+  --bs-pagination-hover-color: var(--black-color);
+  --bs-pagination-hover-bg: var(--bs-light);
+  --bs-pagination-focus-color: var(--black-color);
+  --bs-pagination-focus-bg: var(--bs-light);
+  --bs-pagination-focus-box-shadow: none;
+  --bs-pagination-active-bg: #bbbbbb;
+  --bs-pagination-active-border-color: #bbbbbb;
+}
+
+/* Accordian Styles 
+------------------------------------------------------------- */
+.accordion-button:not(.collapsed) {
+  color: var(--bs-dark);
+}
+
+/* Form Styles
+------------------------------------------------------------- */
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: none;
+}
+
+.form-check-input:focus {
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: none;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--dark-color);
+  outline: 0;
+  box-shadow: none;
+}
+
+input,
+select,
+textarea {
+  border-color: var(--dark-color);
+  outline: 0;
+  box-shadow: none;
+}
+
+select:focus {
+  box-shadow: none;
+}
+
+/*----------------------------------------------*/
+/* 4 SITE STRUCTURE */
+/*----------------------------------------------*/
+
+
+/* 4.1 Sidebar styles 
+------------------------------------------------------------- */
+
+.logo {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo img {
+  height: 40px;
+}
+
+#sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  background: #1A1B1C;
+  transition: all 0.3s;
+  z-index: 1000;
+}
+
+#sidebar.hidden {
+  margin-left: calc(-1 * var(--sidebar-width));
+}
+
+#content {
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+  min-height: 100vh;
+  transition: all 0.3s;
+}
+
+#content.expanded {
+  width: 100%;
+  margin-left: 0;
+}
+
+#topbar {
+  height: var(--topbar-height);
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show>.nav-link {
+  color: var(--bs-nav-pills-link-active-color);
+  background-color: var(--bs-nav-pills-link-active-bg);
+}
+
+.nav-link {
+  color: #BCBCBC;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: white;
+}
+
+.sidebar-dropdown {
+  padding-left: 1.5rem;
+}
+
+.card-icon {
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  #sidebar {
+    margin-left: calc(-1 * var(--sidebar-width));
+  }
+
+  #sidebar.hidden {
+    margin-left: 0;
+  }
+
+  #content {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/*4.1.1 ---------- sidebar dropdown ----------- */
+
+ul li label i:first-child {
+  color: rgb(119, 119, 119);
+}
+
+/* Start Radio inputs */
+input[name="menu"],
+input[name=dropdowns] {
+  display: none;
+}
+
+input[type=radio]:checked~label {
+  color: rgb(124, 179, 66);
+}
+
+input[type=radio]:checked~label>i:first-child {
+  color: rgb(124, 179, 66);
+}
+
+input:not(checked)~label {
+  color: rgb(60, 33, 33);
+}
+
+/* End Radio inputs */
+
+
+/* Start Checkbox inputs */
+input[type=checkbox]:checked~ul {
+  display: block;
+}
+
+#uparrow,
+#downarrow {
+  float: right;
+}
+
+input[name=dropdowns]:checked~label>#downarrow {
+  display: none;
+}
+
+input[name=dropdowns]:checked~label>#uparrow {
+  display: inline-block;
+}
+
+input[name=dropdowns]:not(checked)~label>#uparrow {
+  display: none;
+}
+
+/* End Checkbox inputs */
+
+ul li label:hover {
+  cursor: pointer;
+}
+
+.main {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.drop {
+  display: none;
+}
+
+.drop li {
+  margin-left: 20px;
+}
+
+.drop li label {
+  width: 105px;
+}
+
+/* End Menu */
+
+
+/* 4.2 Chart-specific styles 
+------------------------------------------------------------- */
+.chart-container {
+  position: relative;
+  height: 100%;
+  min-height: 250px;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#revenueChart {
+  height: 400px;
+}
+
+
+/* 4.3 Home Page styles 
+------------------------------------------------------------- */
+
+.navbar {
+  box-shadow: 0 0.125rem 0.625rem rgba(90, 97, 105, 0.1);
+}
+
+.card {
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.625rem rgba(90, 97, 105, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  background: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.25rem 1.5rem;
+}
+
+.stat-card {
+  padding: 1.5rem;
+}
+
+.table-responsive {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  border-top: none;
+  font-weight: 600;
+  color: var(--secondary-color);
+}
+
+.status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.delivered {
+  background-color: rgba(40, 199, 111, 0.1);
+  color: var(--success-color);
+}
+
+.status-badge.shipping {
+  background-color: rgba(255, 159, 67, 0.1);
+  color: var(--warning-color);
+}
+
+.status-badge.confirmed {
+  background-color: rgba(0, 207, 232, 0.1);
+  color: var(--info-color);
+}
+
+.product-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.35rem;
+  object-fit: cover;
+}
+
+@media (max-width: 992px) {
+  .sidebar {
+    margin-left: -260px;
+  }
+
+  .sidebar.collapsed {
+    margin-left: 0px;
+  }
+
+  .sidebar.show {
+    margin-left: 0;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+
+/*----------------------------------------------*/
+/* 5 PAGES STYLE */
+/*----------------------------------------------*/
+
+/* 5.1 Product Detail Page
+/*----------------------------------------------*/
+.product-thumbnail-slider {
+  height: 540px;
+}
+
+/* product-info */
+.rating-container .rating svg {
+  color: var(--bs-yellow);
+}
+
+.product-quantity .input-group button.btn-number {
+  width: 100%;
+  height: 100%;
+}
+
+/* product-tabs */
+.product-tabs .nav-tabs .nav-item.show .nav-link,
+.product-tabs .nav-tabs .nav-link:hover,
+.product-tabs .nav-tabs .nav-link.active {
+  color: var(--bs-dark);
+}

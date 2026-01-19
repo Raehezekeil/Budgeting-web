@@ -1,0 +1,397 @@
+/* CURRENT / NEO-BANK THEME (DARK MODE) */
+
+:root {
+    /* Brand Gradient */
+    --neo-gradient: linear-gradient(135deg, #FF6B8B 0%, #8E2DE2 100%);
+    /* Pink to Purple */
+    --neo-gradient-soft: linear-gradient(135deg, rgba(255, 107, 139, 0.2) 0%, rgba(142, 45, 226, 0.2) 100%);
+
+    /* Base Colors - DARK MODE */
+    --neo-dark: #0A0A0A;
+    /* Sidebar Black */
+    --neo-bg: #121212;
+    /* Main Background (Dark Gray) */
+    --neo-card: #1E1E1E;
+    /* Card Background (Lighter Gray) */
+    --neo-hover: #2C2C2C;
+    /* Hover State */
+
+    /* Accents */
+    --neo-primary: #8E2DE2;
+    /* Purple */
+    --neo-pink: #FF6B8B;
+    /* Pink */
+    --neo-success: #00D2B6;
+    /* Minty Teal */
+    --neo-warning: #FFB347;
+    /* Bright Orange */
+    --neo-danger: #FF4757;
+    /* Pop Red */
+
+    /* Text */
+    --text-main: #FFFFFF;
+    /* Pure White */
+    --text-muted: #A0A0A0;
+    /* Light Gray */
+    --text-dark: #FFFFFF;
+    /* For things that were previously dark text */
+
+    /* UI */
+    --border-light: #2D2D2D;
+    /* Dark Borders */
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    /* Stronger shadow for depth */
+}
+
+body {
+    background-color: var(--neo-bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+}
+
+/* SIDEBAR */
+#sidebar,
+.bg-neo-dark {
+    background-color: var(--neo-dark) !important;
+    border-right: 1px solid var(--border-light);
+}
+
+#sidebar hr {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-link {
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: all 0.2s;
+    border-radius: 12px;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active,
+.nav-pills .nav-link.active {
+    background: var(--neo-gradient);
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(142, 45, 226, 0.4);
+}
+
+/* CARDS */
+.card {
+    background: var(--neo-card) !important;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--card-shadow);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+}
+
+/* Important for list groups inside cards */
+.list-group-item {
+    background-color: transparent;
+    color: var(--text-main);
+    border-color: var(--border-light);
+}
+
+/* TOPBAR */
+.navbar {
+    background: var(--neo-card) !important;
+    border-bottom: 1px solid var(--border-light) !important;
+}
+
+/* STAT CARDS */
+.stat-card:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+    background-color: var(--neo-hover) !important;
+}
+
+/* BUTTONS */
+.btn-primary {
+    background: var(--neo-gradient);
+    border: none;
+    color: white;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 15px rgba(142, 45, 226, 0.3);
+}
+
+.btn-light {
+    background: var(--neo-hover);
+    border: 1px solid var(--border-light);
+    color: var(--text-main);
+}
+
+.btn-light:hover {
+    background: #333;
+    color: white;
+}
+
+.btn-outline-secondary {
+    border-color: var(--text-muted);
+    color: var(--text-muted);
+}
+
+.btn-outline-secondary:hover {
+    border-color: white;
+    color: white;
+    background: transparent;
+}
+
+/* ICONS & BADGES */
+.icon-box {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ensure backgrounds are dark-transparent, not white-tinted too brightly */
+.bg-light {
+    background-color: var(--neo-hover) !important;
+}
+
+.bg-soft-green {
+    background: rgba(0, 210, 182, 0.15);
+}
+
+.text-green {
+    color: var(--neo-success) !important;
+}
+
+.bg-soft-orange {
+    background: rgba(255, 71, 87, 0.15);
+}
+
+.text-orange {
+    color: var(--neo-danger) !important;
+}
+
+.bg-soft-primary {
+    background: rgba(142, 45, 226, 0.15);
+}
+
+.text-primary {
+    color: var(--neo-primary) !important;
+}
+
+.bg-soft-info {
+    background: rgba(255, 179, 71, 0.15);
+}
+
+.text-info {
+    color: var(--neo-warning) !important;
+}
+
+
+/* ALERT (Auto-Suggest) */
+.alert-soft-green {
+    background: var(--neo-gradient);
+    color: white;
+}
+
+.alert-soft-green h6,
+.alert-soft-green p {
+    color: white !important;
+}
+
+/* PROGRESS BARS with Gradient */
+.progress {
+    background-color: #333;
+    /* Darker track */
+    height: 8px !important;
+}
+
+.progress-bar.bg-success {
+    background-color: var(--neo-success) !important;
+    background-image: linear-gradient(90deg, #00D2B6 0%, #5BF1DD 100%);
+    box-shadow: 0 0 10px rgba(0, 210, 182, 0.4);
+}
+
+.progress-bar.bg-warning {
+    background-color: var(--neo-warning) !important;
+    box-shadow: 0 0 10px rgba(255, 179, 71, 0.4);
+}
+
+.progress-bar.bg-danger {
+    background-color: var(--neo-danger) !important;
+    background-image: linear-gradient(90deg, #FF4757 0%, #FF6B81 100%);
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.4);
+}
+
+/* FORM INPUTS - DARK MODE */
+.form-control,
+.form-select {
+    background-color: var(--neo-hover) !important;
+    border: 1px solid var(--border-light) !important;
+    color: white !important;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: #333 !important;
+    border-color: var(--neo-primary) !important;
+    box-shadow: 0 0 0 4px rgba(142, 45, 226, 0.1);
+}
+
+/* INPUT GROUPS */
+.input-group-text {
+    background-color: var(--neo-hover) !important;
+    border: 1px solid var(--border-light) !important;
+    color: var(--text-muted) !important;
+    border-right: none !important;
+}
+
+.input-group .form-control {
+    border-left: none !important;
+}
+
+/* TEXT UTILITIES */
+.text-main {
+    color: var(--text-main) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.fw-bold {
+    font-weight: 700 !important;
+}
+
+.tracking-wide {
+    letter-spacing: 1px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+/* Goals Board Additions */
+.donut-chart {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    /* Gradient progress variable --p */
+    background: conic-gradient(var(--neo-success) calc(var(--p)*1%), #2D2D2D 0%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Inner Hole to make it a donut */
+.donut-chart::after {
+    content: "";
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background-color: var(--neo-card);
+    border-radius: 50%;
+}
+
+.donut-text {
+    z-index: 2;
+    /* Sit on top of hole */
+    position: relative;
+    font-size: 2rem;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+/* Goal Card Hover */
+.goal-card {
+    transition: transform 0.2s, border-color 0.2s;
+    border: 1px solid var(--border-light);
+}
+
+.goal-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--neo-primary);
+    box-shadow: 0 4px 20px rgba(142, 45, 226, 0.15);
+}
+
+.goal-btn-deposit {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--neo-success);
+    border: 1px solid var(--border-light);
+    transition: all 0.2s;
+}
+
+.goal-btn-deposit:hover {
+    background: var(--neo-success);
+    color: black;
+    box-shadow: 0 0 10px var(--neo-success);
+    border-color: var(--neo-success);
+}
+
+/* Transaction Logos */
+.transaction-list img {
+    object-fit: contain;
+    /* Don't crop */
+    width: 60%;
+    /* Give it some breathing room */
+    height: 60%;
+}
+
+
+/* Reports & Analytics */
+.chart-bar-container {
+    height: 8px;
+    background: #333;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.chart-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--neo-primary);
+    /* Default fallback */
+    width: 0%;
+    transition: width 1s ease-out;
+}
+
+/* Specific Chart Colors (Cycling) */
+.chart-bar-0 {
+    background: var(--neo-pink);
+    box-shadow: 0 0 10px var(--neo-pink);
+}
+
+.chart-bar-1 {
+    background: var(--neo-primary);
+    box-shadow: 0 0 10px var(--neo-primary);
+}
+
+.chart-bar-2 {
+    background: var(--neo-success);
+    box-shadow: 0 0 10px var(--neo-success);
+}
+
+.chart-bar-3 {
+    background: var(--neo-warning);
+    box-shadow: 0 0 10px var(--neo-warning);
+}
+
+.chart-bar-4 {
+    background: var(--neo-danger);
+    box-shadow: 0 0 10px var(--neo-danger);
+}
+
+/* Date Input Styling Override for Dark Mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    /* Make calendar icon white */
+    cursor: pointer;
+}
