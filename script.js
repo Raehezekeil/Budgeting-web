@@ -1147,36 +1147,7 @@ function clearAllData() {
     }
 }
 
-function handlePictureUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) { // 2MB limit
-        alert("File is too large. Please choose an image under 2MB.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function (evt) {
-        // Update State (Both New and Legacy)
-        state.appSettings.profile.photo = evt.target.result;
-        state.settings.photo = evt.target.result;
-
-        // Update UI
-        render();
-
-        // Also update header immediately
-        const topImg = document.querySelector('.rounded-circle[alt="Profile"]');
-        if (topImg) topImg.src = state.settings.photo;
-
-        const preview = document.getElementById('profile-preview');
-        if (preview) preview.src = state.settings.photo;
-
-        saveState();
-        showToast("Profile photo updated!");
-    };
-    reader.readAsDataURL(file);
-}
 
 function handleSaveProfile(e) {
     e.preventDefault();
