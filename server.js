@@ -45,11 +45,11 @@ app.use('/api/data', require('./routes/api'));
 
 // Serve Frontend
 app.get('/', (req, res) => {
-    // Serve welcome page as the landing page
-    if (require('fs').existsSync(path.join(__dirname, 'dist', 'welcome.html'))) {
-        res.sendFile(path.join(__dirname, 'dist', 'welcome.html'));
+    // Serve login page as the landing page
+    if (require('fs').existsSync(path.join(__dirname, 'dist', 'login.html'))) {
+        res.sendFile(path.join(__dirname, 'dist', 'login.html'));
     } else {
-        res.sendFile(path.join(__dirname, 'welcome.html'));
+        res.sendFile(path.join(__dirname, 'login.html'));
     }
 });
 

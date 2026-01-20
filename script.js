@@ -16,8 +16,8 @@
 
         if (!data.authenticated) {
             // User is trying to access a protected page (like dashboard/index.html)
-            // Send them to Welcome
-            window.location.href = '/welcome.html';
+            // Send them to Login
+            window.location.href = '/login.html';
         } else {
             // User is logged in
             window.currentUser = data.user;
@@ -26,8 +26,7 @@
     } catch (err) {
         console.error('Auth check failed', err);
         // On error (e.g. 401 unauth), if protected page, redirect.
-        // Since we already filtered public pages above, we can safely redirect.
-        window.location.href = '/welcome.html';
+        window.location.href = '/login.html';
     }
 })();
 
@@ -35,10 +34,10 @@
 async function handleLogout() {
     try {
         await fetch('/api/auth/logout', { method: 'POST' });
-        window.location.href = '/welcome.html';
+        window.location.href = '/login.html';
     } catch (e) {
         console.error("Logout failed", e);
-        window.location.href = '/welcome.html';
+        window.location.href = '/login.html';
     }
 }
 window.handleLogout = handleLogout;
