@@ -14,6 +14,10 @@ app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve built assets (Vite output)
+app.use(express.static(path.join(__dirname, 'dist')));
+// Fallback to public if needed (or for local dev without build)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session Setup - Stateless for Cloud/Serverless
@@ -45,7 +49,13 @@ app.use('/api/data', require('./routes/api'));
 
 // Serve Frontend
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    // Try dist first, then public
+    const distIndex = path.join(__dirname, 'dist', 'index.html');
+    if (require('fs').existsSync(distIndex)) {
+        res.sendFile(distIndex);
+    } else {
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
 });
 
 app.listen(PORT, () => {
