@@ -2553,7 +2553,8 @@ function renderGoals() {
         `;
         grid.appendChild(col);
     });
-} updateDonut(totalSaved, totalTarget, totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0);
+
+    updateDonut(totalSaved, totalTarget, totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0);
 }
 
 function updateDonut(saved, target, percent) {
