@@ -21,6 +21,23 @@ import { signOut } from 'aws-amplify/auth';
             // User is logged in
             window.currentUser = user;
             console.log('Logged in as:', user.userId);
+
+            // DEFERRED PROFILE CHECK (The "Safety Net")
+            // This runs AFTER the dashboard has already started loading
+            try {
+                const { data: settings } = await client.models.Settings.list();
+                if (settings.length === 0) {
+                    // No profile -> Show Onboarding
+                    console.log('No profile found (Deferred Check). Launching Onboarding...');
+                    const onboardingOverlay = document.getElementById('onboarding-overlay');
+                    if (onboardingOverlay) onboardingOverlay.classList.remove('d-none');
+                } else {
+                    console.log('Profile validated.');
+                }
+            } catch (err) {
+                console.warn('Deferred profile check failed:', err);
+                // We do NOT block usage. The user is in.
+            }
         }
     } catch (err) {
         console.error('Auth check failed', err);
