@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            setLoading(btn, true);
+            setLoading(btn, 'Creating Account...');
             errorMsg.style.display = 'none';
 
             try {
@@ -81,36 +81,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- VERIFY HANDLER ---
     const verifyForm = document.getElementById('verify-form');
     if (verifyForm) {
-        // Import on demand or assume standard import if using bundler (we need to update imports at top)
-        // For now, let's assume imports are available or we add them. 
-        // We need confirmSignUp at the top.
-
         verifyForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = verifyForm.querySelector('button[type="submit"]');
             const email = document.getElementById('verify-email').value;
             const code = document.getElementById('verify-code').value;
 
-            setLoading(btn, true);
+            setLoading(btn, 'Verifying...');
             errorMsg.style.display = 'none';
 
             try {
-                // We need to import confirmSignUp. 
-                // Since this is a replacement block, we can't easily change top-level imports here without another tool call.
-                // We will use the dynamically imported version if needed or assume user fixes imports. 
-                // Actually, best to update imports in a separate call or use a clever dynamic import if possible.
-                // PLEASE NOTE: I will update imports in the next step.
-
-                // Temporary usage of global (if exposed) or we'll fix imports next.
-                // Let's rely on the next step to fix the import.
+                // Dynamic import for confirmSignUp to ensure it loads
                 const { confirmSignUp } = await import('aws-amplify/auth');
                 const { isSignUpComplete, nextStep } = await confirmSignUp({ username: email, confirmationCode: code });
 
-                // Auto sign in or redirect to login
-                // Auto sign in or redirect to login
-                // window.location.href = '/login.html'; // OLD
-
-                // NEW: Show Login UI inline
+                // NEW: Show Login UI inline after verification
                 if (document.getElementById('verify-form')) document.getElementById('verify-form').style.display = 'none';
                 if (document.getElementById('login-container')) document.getElementById('login-container').style.display = 'block';
                 showError('Verification successful! Please log in.');
@@ -153,38 +138,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Sign in result:', { isSignedIn, nextStep });
 
                 if (isSignedIn) {
-                    // Check for existing profile
-                    try {
-                        console.log('Checking for existing profile...');
-                        const { data: settings } = await client.models.Settings.list();
-                        console.log('Profile check result:', settings);
-
-                        if (settings.length > 0) {
-                            console.log('Profile found. Redirecting to dashboard...');
-                            window.location.href = '/dashboard.html';
-                        } else {
-                            console.log('No profile found. Redirecting to onboarding...');
-                            window.location.href = '/dashboard.html?onboarding=true';
-                        }
-                    } catch (dbError) {
-                        console.error("Error checking profile:", dbError);
-                        // Fallback to dashboard if check fails
-                        console.log('Fallback redirect to dashboard...');
-                        window.location.href = '/dashboard.html';
-                    }
+                    // NUCLEAR BYPASS: Redirect immediately.
+                    // We removed the blocking 'Settings.list()' check.
+                    // The dashboard (script.js) now handles the profile check lazily.
+                    setLoading(btn, 'Redirecting...');
+                    console.log('Login successful. Redirecting to dashboard...');
+                    window.location.href = '/dashboard.html';
                 } else {
                     console.warn('Sign in not complete. Next step:', nextStep);
                     showError('Login requires strict verification.');
+                    setLoading(btn, false);
                 }
             } catch (err) {
                 console.error('Login Error:', err);
                 showError(err.message || 'Invalid credentials.');
-            } finally {
                 setLoading(btn, false);
             }
         });
     }
-
 
     // --- UI TOGGLE LOGIC ---
     const signupContainer = document.getElementById('signup-container');
