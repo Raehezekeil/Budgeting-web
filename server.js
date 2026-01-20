@@ -48,12 +48,29 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/data', require('./routes/api'));
 
 // Serve Frontend
-app.get('*', (req, res) => {
-    // Try dist first, then public
-    const distIndex = path.join(__dirname, 'dist', 'index.html');
-    if (require('fs').existsSync(distIndex)) {
-        res.sendFile(distIndex);
+// Serve Frontend
+app.get('/', (req, res) => {
+    // Serve welcome page as the landing page
+    if (require('fs').existsSync(path.join(__dirname, 'dist', 'welcome.html'))) {
+        res.sendFile(path.join(__dirname, 'dist', 'welcome.html'));
     } else {
+        res.sendFile(path.join(__dirname, 'welcome.html'));
+    }
+});
+
+app.get('*', (req, res) => {
+    // Try dist first, then root
+    // If requesting specific file (e.g. login.html), serve it
+    const requestedPath = req.path.substring(1);
+    const distPath = path.join(__dirname, 'dist', requestedPath);
+
+    if (requestedPath && require('fs').existsSync(path.join(__dirname, requestedPath))) {
+        res.sendFile(path.join(__dirname, requestedPath));
+    } else if (require('fs').existsSync(distPath)) {
+        res.sendFile(distPath);
+    } else {
+        // Fallback to index.html for SPA routing (if any) or login
+        // But for this app, we might just 404 or redirect to /
         res.sendFile(path.join(__dirname, 'index.html'));
     }
 });

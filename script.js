@@ -4,11 +4,11 @@
         const res = await fetch('/api/auth/me');
         const data = await res.json();
         if (!data.authenticated) {
-            // User requested: First time users should go to signup
+            // User requested: First time users should go to welcome page
             // Check if we are already on login or signup to avoid loop
             const path = window.location.pathname;
-            if (!path.includes('login.html') && !path.includes('signup.html')) {
-                window.location.href = '/signup.html';
+            if (!path.includes('login.html') && !path.includes('signup.html') && !path.includes('welcome.html')) {
+                window.location.href = '/welcome.html';
             }
         } else {
             // Optional: Store user info globally
@@ -29,10 +29,10 @@
 async function handleLogout() {
     try {
         await fetch('/api/auth/logout', { method: 'POST' });
-        window.location.href = '/signup.html';
+        window.location.href = '/welcome.html';
     } catch (e) {
         console.error("Logout failed", e);
-        window.location.href = '/signup.html';
+        window.location.href = '/welcome.html';
     }
 }
 window.handleLogout = handleLogout;

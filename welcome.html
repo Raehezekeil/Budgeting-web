@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowState - Take Control of Your Money</title>
+    <meta name="description"
+        content="The simple, secure way to track spending and hit your savings goals. Join 10K+ users today.">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="welcome.css">
+</head>
+
+<body>
+
+    <div class="welcome-screen">
+        <!-- Nav -->
+        <nav class="navbar">
+            <div class="logo">FlowState</div>
+            <div class="nav-links">
+                <a href="/login.html" class="nav-link">Log In</a>
+                <button class="cta-small" onclick="goToSignup()">Sign Up</button>
+            </div>
+        </nav>
+
+        <!-- Hero section -->
+        <header class="hero">
+            <div class="hero-content">
+                <h1 class="fade-in-up">Take control of your money in 60 seconds</h1>
+                <p class="fade-in-up delay-1">Track spending • Hit savings goals • See where your money goes</p>
+                <div class="cta-group fade-in-up delay-2">
+                    <button class="cta-primary pulse" onclick="goToSignup()">Get started free</button>
+                    <button class="cta-secondary" onclick="scrollToDemo()">See how it works</button>
+                </div>
+                <div class="trust-badge fade-in-up delay-3">
+                    <span>⭐⭐⭐⭐⭐ 4.9/5 from 10K+ users</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Demo preview -->
+        <section class="demo" id="demo-section">
+            <div class="demo-container">
+                <div class="demo-window">
+                    <div class="window-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <!-- Placeholder for dashboard screenshot -->
+                    <div class="demo-content">
+                        <div class="skeleton-sidebar"></div>
+                        <div class="skeleton-main">
+                            <div class="skeleton-card"></div>
+                            <div class="skeleton-graph"></div>
+                            <div class="skeleton-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits section -->
+        <section class="benefits">
+            <div class="benefit-card fade-on-scroll">
+                <div class="icon">💸</div>
+                <h3>Track Automatically</h3>
+                <p>Connect your accounts or log cash instantly. Never miss a transaction.</p>
+            </div>
+            <div class="benefit-card fade-on-scroll">
+                <div class="icon">🎯</div>
+                <h3>Hit Your Goals</h3>
+                <p>Set targets for vacations, homes, or debt. Watch your progress grow.</p>
+            </div>
+            <div class="benefit-card fade-on-scroll">
+                <div class="icon">📱</div>
+                <h3>Anywhere Access</h3>
+                <p>Manage your budget from your phone, tablet, or desktop. Always synced.</p>
+            </div>
+        </section>
+
+        <!-- Trust indicators -->
+        <section class="trust">
+            <div class="stat-item">
+                <h2 class="counter" data-target="12847">0</h2>
+                <p>Active Users</p>
+            </div>
+            <div class="stat-item">
+                <h2 class="counter" data-target="2">0</h2><!-- 2.4B -> 2.4 -->
+                <p>Billions Tracked</p>
+            </div>
+            <div class="security-badge">
+                <div class="lock-icon">🔒</div>
+                <div>
+                    <strong>Bank-Level Security</strong>
+                    <p>256-bit Encryption • Local Storage Option</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="final-cta">
+            <h2>Ready to master your finances?</h2>
+            <button class="cta-primary large" onclick="goToSignup()">Start tracking free →</button>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-links">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Contact</a>
+            </div>
+            <p class="copyright">© 2026 FlowState Budgeting. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="welcome.js"></script>
+</body>
+
+</html>
