@@ -22,14 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMsg.style.animation = 'shake 0.5s';
     };
 
-    // Utility: Set Loading State
-    const setLoading = (btn, isLoading) => {
-        if (isLoading) {
-            btn.dataset.originalText = btn.textContent;
-            btn.textContent = 'Please wait...';
+    // Utility: Set Loading State with Status
+    const setLoading = (btn, statusText) => {
+        if (statusText) {
+            if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent;
+            btn.textContent = statusText;
             btn.disabled = true;
             btn.style.opacity = '0.7';
-            btn.style.cursor = 'not-allowed';
+            btn.style.cursor = 'wait';
         } else {
             btn.textContent = btn.dataset.originalText || 'Submit';
             btn.disabled = false;
@@ -148,24 +148,32 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMsg.style.display = 'none';
 
             try {
+                console.log('Attempting sign in for:', email);
                 const { isSignedIn, nextStep } = await signIn({ username: email, password });
+                console.log('Sign in result:', { isSignedIn, nextStep });
 
                 if (isSignedIn) {
                     // Check for existing profile
                     try {
+                        console.log('Checking for existing profile...');
                         const { data: settings } = await client.models.Settings.list();
+                        console.log('Profile check result:', settings);
+
                         if (settings.length > 0) {
+                            console.log('Profile found. Redirecting to dashboard...');
                             window.location.href = '/dashboard.html';
                         } else {
-                            // No profile found -> Force onboarding
+                            console.log('No profile found. Redirecting to onboarding...');
                             window.location.href = '/dashboard.html?onboarding=true';
                         }
                     } catch (dbError) {
                         console.error("Error checking profile:", dbError);
                         // Fallback to dashboard if check fails
+                        console.log('Fallback redirect to dashboard...');
                         window.location.href = '/dashboard.html';
                     }
                 } else {
+                    console.warn('Sign in not complete. Next step:', nextStep);
                     showError('Login requires strict verification.');
                 }
             } catch (err) {
