@@ -1,3 +1,33 @@
+// --- AUTH CHECK ---
+(async function checkAuth() {
+    try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (!data.authenticated) {
+            window.location.href = '/login.html';
+        } else {
+            // Optional: Store user info globally
+            window.currentUser = data.user;
+            console.log('Logged in as:', data.user.name);
+        }
+    } catch (err) {
+        console.error('Auth check failed', err);
+        window.location.href = '/login.html';
+    }
+})();
+
+// --- LOGOUT ---
+async function handleLogout() {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login.html';
+    } catch (e) {
+        console.error("Logout failed", e);
+        window.location.href = '/login.html';
+    }
+}
+window.handleLogout = handleLogout;
+
 // 1. CONFIG: Categories
 const categories = [
     { id: 'uncategorized', name: 'Uncategorized', type: 'expense', icon: '❓', default: 0 },
@@ -151,36 +181,9 @@ let state = {
         }
     },
     viewPeriod: { year: new Date().getFullYear(), month: new Date().getMonth() + 1 }, // 1-indexed
-    transactions: [
-        { id: 101, type: 'expense', amount: 84.50, category: 'groceries', date: '2026-01-24', notes: 'Whole Foods' },
-        { id: 102, type: 'expense', amount: 24.00, category: 'transport', date: '2026-01-23', notes: 'Uber' },
-        { id: 103, type: 'expense', amount: 15.99, category: 'entertainment', date: '2026-01-23', notes: 'Netflix' },
-        { id: 104, type: 'expense', amount: 35.00, category: 'dining', date: '2026-01-22', notes: 'DoorDash' },
-        { id: 105, type: 'expense', amount: 1200.00, category: 'rent', date: '2026-01-01', notes: 'Rent Payment' },
-        { id: 106, type: 'income', amount: 2500.00, category: 'income', date: '2026-01-15', notes: 'Salary' },
-        { id: 107, type: 'income', amount: 450.00, category: 'income', date: '2026-01-20', notes: 'Freelance Project' }
-    ],
+    transactions: [],
     budgets: {},
-    goals: [
-        { id: 1, name: 'Tesla Model 3', target: 45000, current: 2500, icon: '🚘' }
-    ],
-    // View State
-    viewDate: new Date(),
-    txViewDate: new Date(), // Separate date for tx page
-    calViewDate: new Date(), // Separate date for calendar
-    txFilterType: 'all', // 'all', 'income', 'expense'
-
-    // Global Search & Filter State
-    filters: {
-        search: '',
-        category: 'all',
-        type: 'all'
-    },
-    recurring: [], // { id, type, amount, category, notes, frequency, nextDue, active }
-    goals: [
-        { id: 1, name: "Emergency Fund", type: "savings", target: 5000, current: 1200, dueDate: "2026-12-31", linkedCategory: "income", subTitle: "3-6 months expenses", icon: "🛡️" },
-        { id: 2, name: "Credit Card", type: "debt", target: 2000, current: 450, dueDate: "2026-06-01", linkedCategory: "debt", subTitle: "Pay off Visa", icon: "💳" }
-    ]
+    goals: []
 };
 
 // 4. INIT
@@ -250,7 +253,46 @@ document.addEventListener('DOMContentLoaded', () => {
             renderFilteredGlobals();
         });
     }
+
+    // INITIAL FETCH
+    fetchAllData();
 });
+
+async function fetchAllData() {
+    try {
+        // Transactions
+        const txRes = await fetch('/api/data/transactions');
+        const txData = await txRes.json();
+        state.transactions = txData;
+
+        // Budgets
+        const bRes = await fetch('/api/data/budgets');
+        const bData = await bRes.json();
+        state.budgets = {};
+        bData.forEach(b => {
+            state.budgets[b.category] = b.limit_amount;
+        });
+
+        // Goals
+        const gRes = await fetch('/api/data/goals');
+        const gData = await gRes.json();
+        state.goals = gData;
+
+        // Settings
+        const sRes = await fetch('/api/data/settings');
+        const sData = await sRes.json();
+        if (sData) {
+            if (sData.theme) state.appSettings.display.darkMode = (sData.theme === 'dark');
+            if (sData.currency) { state.appSettings.profile.currency = sData.currency; state.settings.currency = sData.currency; }
+            // ... map other settings ...
+        }
+
+        render();
+        console.log('Data fetched and rendered');
+    } catch (err) {
+        console.error('Error fetching data:', err);
+    }
+}
 
 // --- GLOBAL SEARCH LOGIC ---
 
@@ -358,11 +400,22 @@ function setTxFilter(type) {
     renderTransactionsPage();
 }
 
-function deleteTransaction(id) {
+async function deleteTransaction(id) {
     if (confirm("Delete this transaction?")) {
-        state.transactions = state.transactions.filter(t => t.id !== id);
-        render(); // Update Dashboard
-        renderTransactionsPage(); // Update List
+        try {
+            const res = await fetch(`/api/data/transactions/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                state.transactions = state.transactions.filter(t => t.id !== id);
+                render(); // Update Dashboard
+                renderTransactionsPage(); // Update List
+                showToast("Transaction deleted");
+            } else {
+                showToast("Error deleting transaction");
+            }
+        } catch (err) {
+            console.error(err);
+            showToast("Network error");
+        }
     }
 }
 
@@ -577,15 +630,35 @@ function renderBudgetsPage() {
     else { leftEl.className = "fw-bold text-green m-0 mt-2"; }
 }
 
-function updateBudget(catId, value) {
+async function updateBudget(catId, value) {
     const val = parseFloat(value);
-    if (isNaN(val) || val < 0) {
-        delete state.budgets[catId];
-    } else {
-        state.budgets[catId] = val;
+
+    try {
+        const res = await fetch('/api/data/budgets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                category: catId,
+                limit_amount: isNaN(val) ? 0 : val
+            })
+        });
+
+        if (res.ok) {
+            if (isNaN(val) || val < 0) {
+                delete state.budgets[catId];
+            } else {
+                state.budgets[catId] = val;
+            }
+            renderBudgetsPage();
+            render();
+            showToast("Budget updated");
+        } else {
+            showToast("Error updating budget");
+        }
+    } catch (err) {
+        console.error(err);
+        showToast("Network error");
     }
-    renderBudgetsPage();
-    render();
 }
 window.changeBudgetMonth = changeBudgetMonth;
 window.updateBudget = updateBudget;
@@ -1082,6 +1155,19 @@ function saveSetting(el) {
 
     // Visual Feedback
     showToast("Setting saved");
+
+    // Sync with API
+    try {
+        fetch('/api/data/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                theme: state.appSettings.display.darkMode ? 'dark' : 'light',
+                currency: state.appSettings.profile.currency,
+                language: 'en'
+            })
+        });
+    } catch (e) { console.error("Sync failed", e); }
 }
 
 function toggleSection(id) {
@@ -1210,7 +1296,7 @@ function autoSuggestBudgets() {
     renderBudgetsPage(); // Update budget page if open
 }
 
-function handleAddTransaction(e) {
+async function handleAddTransaction(e) {
     e.preventDefault();
     const isIncome = document.getElementById('type-inc').checked;
     const amount = parseFloat(document.getElementById('t-amount').value);
@@ -1234,52 +1320,54 @@ function handleAddTransaction(e) {
     }
     const dateStr = dateObj.toISOString().split('T')[0];
 
-    // 1. Transaction Object
-    const newTx = {
-        id: Date.now(),
+    // 1. Transaction Object (Prepare for API)
+    const newTxPayload = {
         type: isIncome ? 'income' : 'expense',
         amount: amount,
         category: category,
         date: dateStr,
         notes: notes || (isIncome ? 'Income' : 'Expense')
     };
-    state.transactions.unshift(newTx);
 
-    // 2. Recurring Rule
-    if (isRecurring) {
-        const rule = {
-            id: Date.now() + 1,
-            type: isIncome ? 'income' : 'expense',
-            amount: amount,
-            category: category,
-            notes: notes || (isIncome ? 'Income' : 'Expense'),
-            frequency: frequency,
-            nextDue: calculateNextDue(dateStr, frequency),
-            active: true
-        };
-        // Init state.recurring if undefined
-        if (!state.recurring) state.recurring = [];
-        state.recurring.push(rule);
-        showToast(`Recurring ${frequency} bill set!`);
-    } else {
-        showToast("Transaction added");
+    try {
+        const res = await fetch('/api/data/transactions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newTxPayload)
+        });
+        const savedTx = await res.json();
+
+        if (res.ok) {
+            state.transactions.unshift(savedTx);
+            showToast("Transaction added");
+
+            // Auto-track Goals
+            checkGoalAutoTrack(savedTx);
+
+            // Reset Form
+            e.target.reset();
+            document.getElementById('type-exp').checked = true;
+            document.getElementById('t-recurring').checked = false;
+            document.getElementById('rec-opts').classList.add('d-none');
+
+            // Render
+            render();
+            renderBudgetsPage();
+            renderTransactionsPage();
+        } else {
+            showToast("Error adding transaction");
+        }
+    } catch (err) {
+        console.error(err);
+        showToast("Network error");
     }
 
-    // Auto-track Goals
-    checkGoalAutoTrack(newTx);
-
-    // Reset Form
-    e.target.reset();
-    document.getElementById('type-exp').checked = true;
-    document.getElementById('t-recurring').checked = false;
-    document.getElementById('rec-opts').classList.add('d-none');
-    // Set date to today default again? Or leave empty.
-
-    // Render Updates
-    saveState(); // Important!
-    render();
-    renderBudgetsPage();
-    renderTransactionsPage();
+    // 2. Recurring Rule (Still local for now, or update API to support it?)
+    // Leaving recurring as local-only or todo for later API expansion
+    if (isRecurring) {
+        // ... (Keep existing recurring logic if it stores locally, or warn user)
+        showToast("Recurring support coming to API soon!");
+    }
 }
 
 function calculateNextDue(currentDateStr, freq) {
@@ -1392,13 +1480,45 @@ function renderUpcomingTransactions() {
     });
 }
 
-function handleAddGoal() {
+async function handleAddGoal() {
     const name = prompt("Name your new goal:");
     if (!name) return;
     const target = parseFloat(prompt("Target amount ($):"));
     if (!target) return;
-    state.goals.push({ id: Date.now(), name: name, target: target, current: 0, icon: '🎯' });
-    renderGoals();
+
+    try {
+        const res = await fetch('/api/data/goals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: name,
+                target_amount: target,
+                current_amount: 0,
+                deadline: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
+            })
+        });
+
+        const savedGoal = await res.json();
+
+        if (res.ok) {
+            state.goals.push({
+                id: savedGoal.id,
+                name: savedGoal.name,
+                target: savedGoal.target_amount,
+                current: savedGoal.current_amount,
+                icon: '🎯'
+            });
+            if (typeof renderGoalsPage === 'function') renderGoalsPage();
+            else if (typeof renderGoals === 'function') renderGoals();
+            else render(); // Fallback
+
+            showToast("Goal created!");
+        } else {
+            showToast("Error creating goal");
+        }
+    } catch (err) {
+        showToast("Network error");
+    }
 }
 
 function depositToGoal(id) {
