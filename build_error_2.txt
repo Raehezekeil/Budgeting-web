@@ -1,0 +1,25 @@
+
+> budget-app@1.0.0 build
+> vite build
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 10 modules transformed.
+[31mx[39m Build failed in 862ms
+[31merror during build:
+[31mscript.js (1203:12): await isn't allowed in non-async function[31m
+file: [36mC:/Users/rae/Downloads/budget-app/script.js:1203:12[31m
+[33m
+1201: 
+1202:         if (state.settingsId) {
+1203:             await client.models.Settings.update({
+                  ^
+1204:                 id: state.settingsId,
+1205:                 ...settingsPayload
+[31m
+    at getRollupError (file:///C:/Users/rae/Downloads/budget-app/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at ParseError.initialise (file:///C:/Users/rae/Downloads/budget-app/node_modules/rollup/dist/es/shared/node-entry.js:14534:28)
+    at convertNode (file:///C:/Users/rae/Downloads/budget-app/node_modules/rollup/dist/es/shared/node-entry.js:16418:10)
+    at convertProgram (file:///C:/Users/rae/Downloads/budget-app/node_modules/rollup/dist/es/shared/node-entry.js:15658:12)
+    at Module.setSource (file:///C:/Users/rae/Downloads/budget-app/node_modules/rollup/dist/es/shared/node-entry.js:17418:24)
+    at async ModuleLoader.addModuleSource (file:///C:/Users/rae/Downloads/budget-app/node_modules/rollup/dist/es/shared/node-entry.js:21493:13)[39m

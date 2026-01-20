@@ -24,6 +24,8 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
+    "@aws-amplify/data-schema": "^1.22.2",
+    "@aws-amplify/data-schema-types": "^1.2.1",
     "@libsql/client": "^0.17.0",
     "aws-amplify": "^6.15.10",
     "bcrypt": "^6.0.0",

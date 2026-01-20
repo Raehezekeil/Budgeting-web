@@ -1156,7 +1156,7 @@ function setInput(id, val, isCheck = false) {
     else el.value = val;
 }
 
-function saveSetting(el) {
+async function saveSetting(el) {
     const s = state.appSettings;
     const id = el.id;
 
