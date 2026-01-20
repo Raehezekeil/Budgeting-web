@@ -45,14 +45,13 @@ app.use('/api/data', require('./routes/api'));
 
 // Serve Frontend
 app.get('/', (req, res) => {
-    // Force logout on visiting the root URL
+    // Force logout on visiting root
     req.session = null;
-
-    // Serve signup page as the landing page (per user request)
-    if (require('fs').existsSync(path.join(__dirname, 'dist', 'signup.html'))) {
-        res.sendFile(path.join(__dirname, 'dist', 'signup.html'));
+    // Serve index.html (which is now properly the signup page physically)
+    if (require('fs').existsSync(path.join(__dirname, 'dist', 'index.html'))) {
+        res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     } else {
-        res.sendFile(path.join(__dirname, 'signup.html'));
+        res.sendFile(path.join(__dirname, 'index.html'));
     }
 });
 
@@ -67,14 +66,11 @@ app.get('*', (req, res) => {
         res.sendFile(distPath);
     } else {
         // For fallback:
-        // If it looks like a welcome page request or root, try welcome
-        // Otherwise try index.html (dashboard) ONLY if user is logged in logic handle by frontend
-        // But simpler: just serve welcome.html as fallback for unknown routes to capture new users
-        // Or serve index.html? Let's serve welcome.html to be safe for this "Landing Page" focus
-        if (require('fs').existsSync(path.join(__dirname, 'welcome.html'))) {
-            res.sendFile(path.join(__dirname, 'welcome.html'));
+        // Serve dashboard.html (the app) for client-side routing
+        if (require('fs').existsSync(path.join(__dirname, 'dist', 'dashboard.html'))) {
+            res.sendFile(path.join(__dirname, 'dist', 'dashboard.html'));
         } else {
-            res.sendFile(path.join(__dirname, 'index.html'));
+            res.sendFile(path.join(__dirname, 'dashboard.html'));
         }
     }
 });

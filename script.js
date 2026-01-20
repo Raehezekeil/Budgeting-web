@@ -4,9 +4,8 @@
 
     // 1. If we are on the Welcome, Login, or Signup page, DO NOT check auth immediately
     // or at least do not redirect away if unauth.
-    if (path.endsWith('welcome.html') || path.endsWith('login.html') || path.endsWith('signup.html') || path === '/' || path === '/welcome') {
+    if (path.endsWith('welcome.html') || path.endsWith('login.html') || path === '/' || path.endsWith('index.html')) {
         // Just let them stay.
-        // Optional: If specific pages need to redirect AWAY if logged in (like login -> dashboard), handle that separately.
         return;
     }
 
@@ -15,9 +14,9 @@
         const data = await res.json();
 
         if (!data.authenticated) {
-            // User is trying to access a protected page (like dashboard/index.html)
-            // Send them to Login
-            window.location.href = '/login.html';
+            // User is trying to access a protected page (like dashboard)
+            // Send them to Signup (Index)
+            window.location.href = '/';
         } else {
             // User is logged in
             window.currentUser = data.user;
@@ -26,7 +25,7 @@
     } catch (err) {
         console.error('Auth check failed', err);
         // On error (e.g. 401 unauth), if protected page, redirect.
-        window.location.href = '/login.html';
+        window.location.href = '/';
     }
 })();
 
@@ -34,10 +33,10 @@
 async function handleLogout() {
     try {
         await fetch('/api/auth/logout', { method: 'POST' });
-        window.location.href = '/login.html';
+        window.location.href = '/';
     } catch (e) {
         console.error("Logout failed", e);
-        window.location.href = '/login.html';
+        window.location.href = '/';
     }
 }
 window.handleLogout = handleLogout;
