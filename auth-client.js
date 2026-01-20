@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
 
-            setLoading(btn, true);
+            setLoading(btn, 'Authenticating...');
             errorMsg.style.display = 'none';
 
             try {
