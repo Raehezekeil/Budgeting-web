@@ -54,7 +54,7 @@ app.get('*', (req, res) => {
     if (require('fs').existsSync(distIndex)) {
         res.sendFile(distIndex);
     } else {
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        res.sendFile(path.join(__dirname, 'index.html'));
     }
 });
 
