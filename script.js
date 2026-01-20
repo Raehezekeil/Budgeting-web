@@ -920,33 +920,7 @@ function simulateEmail() {
 }
 window.simulateEmail = simulateEmail;
 
-function checkOnboarding() {
-    if (!localStorage.getItem('flowstate_setup_v1')) {
-        document.getElementById('onboarding-overlay').classList.remove('d-none');
-    }
-}
-function nextStep(stepNum) {
-    document.querySelectorAll('.onboarding-step').forEach(el => el.classList.add('d-none'));
-    document.getElementById(`step-${stepNum}`).classList.remove('d-none');
-}
-function finishOnboarding(skipped) {
-    state.transactions = [];
-    state.budgets = {};
-    state.goals = [];
-    if (!skipped) {
-        const goalName = document.getElementById('ob-goal-name').value;
-        const goalAmount = parseFloat(document.getElementById('ob-goal-amount').value);
-        if (goalName && goalAmount > 0) {
-            state.goals.push({ id: Date.now(), name: goalName, target: goalAmount, current: 0, icon: '🎯' });
-        }
-    }
-    localStorage.setItem('flowstate_setup_v1', 'true');
-    document.getElementById('onboarding-overlay').classList.add('d-none');
-    render();
-    alert("Welcome to FlowState! Your dashboard is ready.");
-}
-window.nextStep = nextStep;
-window.finishOnboarding = finishOnboarding;
+
 
 function populateCategorySelect() {
     const sel = document.getElementById('t-category');
