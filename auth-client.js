@@ -106,7 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { isSignUpComplete, nextStep } = await confirmSignUp({ username: email, confirmationCode: code });
 
                 // Auto sign in or redirect to login
-                window.location.href = '/login.html';
+                // Auto sign in or redirect to login
+                // window.location.href = '/login.html'; // OLD
+
+                // NEW: Show Login UI inline
+                if (document.getElementById('verify-form')) document.getElementById('verify-form').style.display = 'none';
+                if (document.getElementById('login-container')) document.getElementById('login-container').style.display = 'block';
+                showError('Verification successful! Please log in.');
             } catch (err) {
                 console.error('Verify Error:', err);
                 showError(err.message || 'Verification failed.');
@@ -158,13 +164,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- GLOBAL LOGOUT ---
+    // --- UI TOGGLE LOGIC ---
+    const signupContainer = document.getElementById('signup-container');
+    const loginContainer = document.getElementById('login-container');
+    // const verifyForm already declared above
+
+    // Link: "Already have an account? Log In" (inside signup)
+    const toLoginLinks = document.querySelectorAll('.to-login-link, #show-login');
+    toLoginLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (signupContainer) signupContainer.style.display = 'none';
+            if (verifyForm) verifyForm.style.display = 'none';
+            if (loginContainer) loginContainer.style.display = 'block';
+            showError(''); // Clear errors
+        });
+    });
+
+    // Link: "New here? Create Account" (inside login)
+    const showSignupLink = document.getElementById('show-signup');
+    if (showSignupLink) {
+        showSignupLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (loginContainer) loginContainer.style.display = 'none';
+            if (verifyForm) verifyForm.style.display = 'none';
+            if (signupContainer) signupContainer.style.display = 'block';
+            showError(''); // Clear errors
+        });
+    }
+
+    // --- LOGOUT HANDLER (Global) ---
     window.handleLogout = async () => {
         try {
             await signOut();
             window.location.href = '/';
         } catch (error) {
             console.error('Error signing out: ', error);
+            window.location.href = '/';
         }
     };
 });
