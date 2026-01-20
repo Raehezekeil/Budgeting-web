@@ -2850,6 +2850,8 @@ function nextStep(step) {
     }
 }
 
+
+
 async function finishOnboarding(skip = false) {
     console.log('Finishing Onboarding...');
 
