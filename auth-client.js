@@ -3,6 +3,7 @@
  * Handles Login using AWS Cognito SDK
  */
 import { signUp, signIn, signOut } from 'aws-amplify/auth';
+import { client } from './src/data-client.js';
 import './src/amplify-config.js'; // Configures Amplify
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -150,7 +151,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { isSignedIn, nextStep } = await signIn({ username: email, password });
 
                 if (isSignedIn) {
-                    window.location.href = '/dashboard.html';
+                    // Check for existing profile
+                    try {
+                        const { data: settings } = await client.models.Settings.list();
+                        if (settings.length > 0) {
+                            window.location.href = '/dashboard.html';
+                        } else {
+                            // No profile found -> Force onboarding
+                            window.location.href = '/dashboard.html?onboarding=true';
+                        }
+                    } catch (dbError) {
+                        console.error("Error checking profile:", dbError);
+                        // Fallback to dashboard if check fails
+                        window.location.href = '/dashboard.html';
+                    }
                 } else {
                     showError('Login requires strict verification.');
                 }
