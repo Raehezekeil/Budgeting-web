@@ -1,45 +1,41 @@
-require('dotenv').config();
 const express = require('express');
-const cookieSession = require('cookie-session');
-const cors = require('cors');
-const morgan = require('morgan');
 const path = require('path');
-const db = require('./database');
+const cors = require('cors');
+const session = require('cookie-session');
+const passport = require('passport');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(morgan('dev'));
+app.use(require('morgan')('dev'));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve built assets (Vite output)
 app.use(express.static(path.join(__dirname, 'dist')));
-// Fallback to public if needed (or for local dev without build)
-app.use(express.static(path.join(__dirname, 'public')));
+// Fallback to root for assets if not in dist (for simple setups)
+app.use(express.static(__dirname));
 
 // Session Setup - Stateless for Cloud/Serverless
-app.use(cookieSession({
+app.use(session({
     name: 'session',
-    keys: [process.env.SESSION_SECRET || 'your-secret-key'],
+    keys: [process.env.SESSION_SECRET || 'secret_key'],
     maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
 }));
 
-// Mock Passport serialization for cookie-session
+// Mock Passport Serialization compatibility for cookie-session
 app.use((req, res, next) => {
-    if (req.session && !req.session.regenerate) {
-        req.session.regenerate = (cb) => { cb(); };
-    }
-    if (req.session && !req.session.save) {
-        req.session.save = (cb) => { cb(); };
+    if (req.session && req.session.passport) {
+        req.session.passport.user = req.session.passport.user;
     }
     next();
 });
 
 // Passport Config
-const passport = require('./config/passport');
+require('./config/passport');
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -47,7 +43,6 @@ app.use(passport.session());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/data', require('./routes/api'));
 
-// Serve Frontend
 // Serve Frontend
 app.get('/', (req, res) => {
     // Serve welcome page as the landing page
@@ -59,19 +54,25 @@ app.get('/', (req, res) => {
 });
 
 app.get('*', (req, res) => {
-    // Try dist first, then root
-    // If requesting specific file (e.g. login.html), serve it
     const requestedPath = req.path.substring(1);
     const distPath = path.join(__dirname, 'dist', requestedPath);
 
+    // Check if the request is for a specific file that exists
     if (requestedPath && require('fs').existsSync(path.join(__dirname, requestedPath))) {
         res.sendFile(path.join(__dirname, requestedPath));
     } else if (require('fs').existsSync(distPath)) {
         res.sendFile(distPath);
     } else {
-        // Fallback to index.html for SPA routing (if any) or login
-        // But for this app, we might just 404 or redirect to /
-        res.sendFile(path.join(__dirname, 'index.html'));
+        // For fallback:
+        // If it looks like a welcome page request or root, try welcome
+        // Otherwise try index.html (dashboard) ONLY if user is logged in logic handle by frontend
+        // But simpler: just serve welcome.html as fallback for unknown routes to capture new users
+        // Or serve index.html? Let's serve welcome.html to be safe for this "Landing Page" focus
+        if (require('fs').existsSync(path.join(__dirname, 'welcome.html'))) {
+            res.sendFile(path.join(__dirname, 'welcome.html'));
+        } else {
+            res.sendFile(path.join(__dirname, 'index.html'));
+        }
     }
 });
 
