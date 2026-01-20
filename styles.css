@@ -2,45 +2,43 @@
 
 :root {
     /* Brand Gradient */
-    --neo-gradient: linear-gradient(135deg, #FF6B8B 0%, #8E2DE2 100%);
-    /* Pink to Purple */
-    --neo-gradient-soft: linear-gradient(135deg, rgba(255, 107, 139, 0.2) 0%, rgba(142, 45, 226, 0.2) 100%);
+    --neo-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+    /* Violet to Pink */
+    --neo-gradient-soft: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
 
     /* Base Colors - DARK MODE */
-    --neo-dark: #0A0A0A;
-    /* Sidebar Black */
-    --neo-bg: #121212;
-    /* Main Background (Dark Gray) */
-    --neo-card: #1E1E1E;
-    /* Card Background (Lighter Gray) */
-    --neo-hover: #2C2C2C;
-    /* Hover State */
+    --neo-dark: #0f172a;
+    /* Slate 900 */
+    --neo-bg: #020617;
+    /* Slate 950 */
+    --neo-card: rgba(30, 41, 59, 0.7);
+    /* Slate 800 with opacity */
+    --neo-hover: rgba(51, 65, 85, 0.8);
+    /* Slate 700 with opacity */
 
     /* Accents */
-    --neo-primary: #8E2DE2;
-    /* Purple */
-    --neo-pink: #FF6B8B;
-    /* Pink */
-    --neo-success: #00D2B6;
-    /* Minty Teal */
-    --neo-warning: #FFB347;
-    /* Bright Orange */
-    --neo-danger: #FF4757;
-    /* Pop Red */
+    --neo-primary: #8b5cf6;
+    /* Violet 500 */
+    --neo-pink: #ec4899;
+    /* Pink 500 */
+    --neo-success: #10b981;
+    /* Emerald 500 */
+    --neo-warning: #f59e0b;
+    /* Amber 500 */
+    --neo-danger: #ef4444;
+    /* Red 500 */
 
     /* Text */
-    --text-main: #FFFFFF;
-    /* Pure White */
-    --text-muted: #A0A0A0;
-    /* Light Gray */
-    --text-dark: #FFFFFF;
-    /* For things that were previously dark text */
+    --text-main: #f8fafc;
+    /* Slate 50 */
+    --text-muted: #94a3b8;
+    /* Slate 400 */
+    --text-dark: #f8fafc;
 
     /* UI */
-    --border-light: #2D2D2D;
-    /* Dark Borders */
-    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    /* Stronger shadow for depth */
+    --border-light: rgba(255, 255, 255, 0.08);
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --glass-blur: blur(12px);
 }
 
 body {
@@ -78,6 +76,8 @@ body {
 /* CARDS */
 .card {
     background: var(--neo-card) !important;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--border-light);
     box-shadow: var(--card-shadow);
 }

@@ -1,38 +1,38 @@
+import { client } from './src/data-client.js';
+import { getCurrentUser } from './src/amplify-config.js';
+import { signOut } from 'aws-amplify/auth';
+
 // --- AUTH CHECK ---
 (async function checkAuth() {
     const path = window.location.pathname;
 
     // 1. If we are on the Welcome, Login, or Signup page, DO NOT check auth immediately
-    // or at least do not redirect away if unauth.
     if (path.endsWith('welcome.html') || path.endsWith('login.html') || path === '/' || path.endsWith('index.html')) {
-        // Just let them stay.
         return;
     }
 
     try {
-        const res = await fetch('/api/auth/me');
-        const data = await res.json();
+        const user = await getCurrentUser();
 
-        if (!data.authenticated) {
+        if (!user) {
             // User is trying to access a protected page (like dashboard)
-            // Send them to Signup (Index)
             window.location.href = '/';
         } else {
             // User is logged in
-            window.currentUser = data.user;
-            console.log('Logged in as:', data.user.name);
+            window.currentUser = user;
+            console.log('Logged in as:', user.userId);
         }
     } catch (err) {
         console.error('Auth check failed', err);
-        // On error (e.g. 401 unauth), if protected page, redirect.
         window.location.href = '/';
     }
 })();
 
 // --- LOGOUT ---
+// --- LOGOUT ---
 async function handleLogout() {
     try {
-        await fetch('/api/auth/logout', { method: 'POST' });
+        await signOut();
         window.location.href = '/';
     } catch (e) {
         console.error("Logout failed", e);
@@ -274,34 +274,48 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchAllData() {
     try {
         // Transactions
-        const txRes = await fetch('/api/data/transactions');
-        const txData = await txRes.json();
+        const { data: txData } = await client.models.Transaction.list();
         state.transactions = txData;
 
         // Budgets
-        const bRes = await fetch('/api/data/budgets');
-        const bData = await bRes.json();
+        const { data: bData } = await client.models.Budget.list();
         state.budgets = {};
         bData.forEach(b => {
-            state.budgets[b.category] = b.limit_amount;
+            state.budgets[b.category] = b.limitAmount;
         });
 
         // Goals
-        const gRes = await fetch('/api/data/goals');
-        const gData = await gRes.json();
-        state.goals = gData;
+        const { data: gData } = await client.models.Goal.list();
+        state.goals = gData.map(g => ({
+            id: g.id,
+            name: g.name,
+            target: g.targetAmount,
+            current: g.currentAmount,
+            icon: '🎯'
+        }));
 
         // Settings
-        const sRes = await fetch('/api/data/settings');
-        const sData = await sRes.json();
-        if (sData) {
+        const { data: sDataList } = await client.models.Settings.list();
+        if (sDataList.length > 0) {
+            const sData = sDataList[0]; // Assuming single settings record per user
+            state.settingsId = sData.id; // Store ID for updates
             if (sData.theme) state.appSettings.display.darkMode = (sData.theme === 'dark');
             if (sData.currency) { state.appSettings.profile.currency = sData.currency; state.settings.currency = sData.currency; }
-            // ... map other settings ...
+            if (sData.name) state.appSettings.profile.name = sData.name;
+            if (sData.occupation) state.appSettings.profile.occupation = sData.occupation;
+        } else {
+            // Create default settings if none exist
+            try {
+                const { data: newSettings } = await client.models.Settings.create({
+                    theme: 'light',
+                    currency: 'USD'
+                });
+                state.settingsId = newSettings.id;
+            } catch (e) { console.error("Auto-init settings failed", e); }
         }
 
         render();
-        console.log('Data fetched and rendered');
+        console.log('Data fetched and rendered (Amplify)');
     } catch (err) {
         console.error('Error fetching data:', err);
     }
@@ -416,8 +430,8 @@ function setTxFilter(type) {
 async function deleteTransaction(id) {
     if (confirm("Delete this transaction?")) {
         try {
-            const res = await fetch(`/api/data/transactions/${id}`, { method: 'DELETE' });
-            if (res.ok) {
+            const { data: deletedTx } = await client.models.Transaction.delete({ id });
+            if (deletedTx) {
                 state.transactions = state.transactions.filter(t => t.id !== id);
                 render(); // Update Dashboard
                 renderTransactionsPage(); // Update List
@@ -647,27 +661,34 @@ async function updateBudget(catId, value) {
     const val = parseFloat(value);
 
     try {
-        const res = await fetch('/api/data/budgets', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                category: catId,
-                limit_amount: isNaN(val) ? 0 : val
-            })
-        });
 
-        if (res.ok) {
+        // 1. Find existing budget
+        // Note: Ideally we store IDs locally, but to be safe we list/filter.
+        // Assuming client.models.Budget.list supports filter or we check manually if list is small.
+        const { data: list } = await client.models.Budget.list();
+        const existing = list.find(b => b.category === catId);
+
+        if (existing) {
             if (isNaN(val) || val < 0) {
+                await client.models.Budget.delete({ id: existing.id });
                 delete state.budgets[catId];
             } else {
+                await client.models.Budget.update({ id: existing.id, limitAmount: val });
                 state.budgets[catId] = val;
             }
-            renderBudgetsPage();
-            render();
-            showToast("Budget updated");
-        } else {
-            showToast("Error updating budget");
+        } else if (!isNaN(val) && val >= 0) {
+            await client.models.Budget.create({
+                category: catId,
+                limitAmount: val,
+                period: 'monthly'
+            });
+            state.budgets[catId] = val;
         }
+
+        renderBudgetsPage();
+        render();
+        showToast("Budget updated");
+
     } catch (err) {
         console.error(err);
         showToast("Network error");
@@ -1171,15 +1192,22 @@ function saveSetting(el) {
 
     // Sync with API
     try {
-        fetch('/api/data/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                theme: state.appSettings.display.darkMode ? 'dark' : 'light',
-                currency: state.appSettings.profile.currency,
-                language: 'en'
-            })
-        });
+        const settingsPayload = {
+            theme: state.appSettings.display.darkMode ? 'dark' : 'light',
+            currency: state.appSettings.profile.currency,
+            name: state.appSettings.profile.name,
+            occupation: state.appSettings.profile.occupation
+        };
+
+        if (state.settingsId) {
+            await client.models.Settings.update({
+                id: state.settingsId,
+                ...settingsPayload
+            });
+        } else {
+            const { data: newS } = await client.models.Settings.create(settingsPayload);
+            state.settingsId = newS.id;
+        }
     } catch (e) { console.error("Sync failed", e); }
 }
 
@@ -1343,14 +1371,9 @@ async function handleAddTransaction(e) {
     };
 
     try {
-        const res = await fetch('/api/data/transactions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newTxPayload)
-        });
-        const savedTx = await res.json();
+        const { data: savedTx } = await client.models.Transaction.create(newTxPayload);
 
-        if (res.ok) {
+        if (savedTx) {
             state.transactions.unshift(savedTx);
             showToast("Transaction added");
 
@@ -1500,25 +1523,19 @@ async function handleAddGoal() {
     if (!target) return;
 
     try {
-        const res = await fetch('/api/data/goals', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: name,
-                target_amount: target,
-                current_amount: 0,
-                deadline: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
-            })
+        const { data: savedGoal } = await client.models.Goal.create({
+            name: name,
+            targetAmount: target,
+            currentAmount: 0,
+            deadline: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
         });
 
-        const savedGoal = await res.json();
-
-        if (res.ok) {
+        if (savedGoal) {
             state.goals.push({
                 id: savedGoal.id,
                 name: savedGoal.name,
-                target: savedGoal.target_amount,
-                current: savedGoal.current_amount,
+                target: savedGoal.targetAmount,
+                current: savedGoal.currentAmount,
                 icon: '🎯'
             });
             if (typeof renderGoalsPage === 'function') renderGoalsPage();
@@ -1530,6 +1547,7 @@ async function handleAddGoal() {
             showToast("Error creating goal");
         }
     } catch (err) {
+        console.error(err);
         showToast("Network error");
     }
 }

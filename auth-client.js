@@ -1,7 +1,9 @@
 /**
- * FlowState Auth Client
- * Handles Login, Signup, and UI Feedback
+ * FlowState Auth Client (Amplify Gen 2)
+ * Handles Login using AWS Cognito SDK
  */
+import { signUp, signIn, signOut } from 'aws-amplify/auth';
+import './src/amplify-config.js'; // Configures Amplify
 
 document.addEventListener('DOMContentLoaded', () => {
     const signupForm = document.getElementById('signup-form');
@@ -41,31 +43,38 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const btn = signupForm.querySelector('button[type="submit"]');
 
-            const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            // Note: Name might require custom attributes in Cognito or separate DB profile
 
             setLoading(btn, true);
             errorMsg.style.display = 'none';
 
             try {
-                const res = await fetch('/api/auth/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
+                const { isSignUpComplete, userId, nextStep } = await signUp({
+                    username: email,
+                    password,
+                    options: {
+                        userAttributes: {
+                            email
+                            // name: name // Add if configured in Cognito standard attributes
+                        }
+                    }
                 });
 
-                const data = await res.json();
-
-                if (res.ok) {
+                if (isSignUpComplete) {
                     // Success! Redirect to Dashboard
+                    // Note: Ideally show a "Check your email for verification" screen if auto-verify is off
+                    // For now, assuming dev/sandbox might auto-verify or we handle it
                     window.location.href = '/dashboard.html';
-                } else {
-                    showError(data.error || 'Signup failed. Please try again.');
+                } else if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
+                    // Need code verification logic
+                    showError('Verification code sent to email. Please check (feature pending UI).');
+                    // TODO: Redirect to verify page
                 }
             } catch (err) {
-                console.error(err);
-                showError('Network error. Check your connection.');
+                console.error('Signup Error:', err);
+                showError(err.message || 'Signup failed.');
             } finally {
                 setLoading(btn, false);
             }
@@ -85,26 +94,30 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMsg.style.display = 'none';
 
             try {
-                const res = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                const { isSignedIn, nextStep } = await signIn({ username: email, password });
 
-                const data = await res.json();
-
-                if (res.ok) {
-                    // Success! Redirect to Dashboard
+                if (isSignedIn) {
                     window.location.href = '/dashboard.html';
                 } else {
-                    showError(data.error || 'Invalid email or password.');
+                    showError('Login requires strict verification.');
                 }
             } catch (err) {
-                console.error(err);
-                showError('Network error. Check your connection.');
+                console.error('Login Error:', err);
+                showError(err.message || 'Invalid credentials.');
             } finally {
                 setLoading(btn, false);
             }
         });
     }
+
+
+    // --- GLOBAL LOGOUT ---
+    window.handleLogout = async () => {
+        try {
+            await signOut();
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Error signing out: ', error);
+        }
+    };
 });
