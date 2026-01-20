@@ -69,35 +69,8 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('signup-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error-msg');
-
-            try {
-                const res = await fetch('/api/auth/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    window.location.href = '/dashboard.html'; // Go to Dashboard on success
-                } else {
-                    errorDiv.textContent = data.error || 'Signup failed';
-                    errorDiv.style.display = 'block';
-                }
-            } catch (err) {
-                errorDiv.textContent = 'Network error.';
-                errorDiv.style.display = 'block';
-            }
-        });
-    </script>
+    <!-- Link to Auth Logic -->
+    <script src="auth-client.js"></script>
 </body>
 
 </html>
