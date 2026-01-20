@@ -1,27 +1,33 @@
 // --- AUTH CHECK ---
 (async function checkAuth() {
+    const path = window.location.pathname;
+
+    // 1. If we are on the Welcome, Login, or Signup page, DO NOT check auth immediately
+    // or at least do not redirect away if unauth.
+    if (path.endsWith('welcome.html') || path.endsWith('login.html') || path.endsWith('signup.html') || path === '/' || path === '/welcome') {
+        // Just let them stay.
+        // Optional: If specific pages need to redirect AWAY if logged in (like login -> dashboard), handle that separately.
+        return;
+    }
+
     try {
         const res = await fetch('/api/auth/me');
         const data = await res.json();
+
         if (!data.authenticated) {
-            // User requested: First time users should go to welcome page
-            // Check if we are already on login or signup to avoid loop
-            const path = window.location.pathname;
-            if (!path.includes('login.html') && !path.includes('signup.html') && !path.includes('welcome.html')) {
-                window.location.href = '/welcome.html';
-            }
+            // User is trying to access a protected page (like dashboard/index.html)
+            // Send them to Welcome
+            window.location.href = '/welcome.html';
         } else {
-            // Optional: Store user info globally
+            // User is logged in
             window.currentUser = data.user;
             console.log('Logged in as:', data.user.name);
         }
     } catch (err) {
         console.error('Auth check failed', err);
-        // Fallback to signup on error
-        const path = window.location.pathname;
-        if (!path.includes('login.html') && !path.includes('signup.html')) {
-            window.location.href = '/signup.html';
-        }
+        // On error (e.g. 401 unauth), if protected page, redirect.
+        // Since we already filtered public pages above, we can safely redirect.
+        window.location.href = '/welcome.html';
     }
 })();
 
