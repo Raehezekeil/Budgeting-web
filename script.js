@@ -52,6 +52,18 @@ const categories = [
     { id: 'dining', name: 'Dining Out', type: 'expense', icon: '🍜', default: 150 }
 ];
 
+// --- CURRENCY HELPER ---
+function formatCurrency(amount) {
+    const currency = state.appSettings.profile.currency || 'USD';
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
+}
+window.formatCurrency = formatCurrency; // Export for inline usage if needed
+
 // 2. BRAND LOGO MAPPING
 const brandMap = {
     'uber': 'uber.com',
@@ -2448,47 +2460,100 @@ function renderReport(preFilteredTx) {
     if (sortedCats.length === 0) list.innerHTML = '<p class="text-muted text-center py-3">No expenses in this period.</p>';
 }
 
+// --- CONFETTI EFFECT ---
+function triggerConfetti() {
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    (function frame() {
+        // Launch a few confetti from the left edge
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+    }());
+    // Simple placeholder for now - or use a cheap CSS animation class on body
+    // Let's create a simple overlay for "Level Up"
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.zIndex = '9999';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.innerHTML = '<h1 style="font-size: 5rem; text-shadow: 0 0 20px black;">🎉 LEVEL UP! 🎉</h1>';
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.remove(), 2000);
+}
+window.triggerConfetti = triggerConfetti;
+
 function renderGoals() {
     const grid = document.getElementById('goals-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    let totalSaved = 0; let totalTarget = 0;
+
     if (state.goals.length === 0) {
         grid.innerHTML = '<p class="text-muted text-center col-12 py-4">No active goals. Click "New Goal" to dream big!</p>';
         updateDonut(0, 0, 0);
         return;
     }
+
     state.goals.forEach(g => {
-        totalSaved += g.current;
-        totalTarget += g.target;
+        // Safety checks
+        g.current = g.current || 0;
+        g.target = g.target || 1000;
+
         const percent = Math.min(100, Math.round((g.current / g.target) * 100));
+        const isComplete = percent >= 100;
+
+        // Circular Progress Vars
+        const radius = 30;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (percent / 100) * circumference;
+        const strokeColor = isComplete ? '#22c55e' : (g.color || '#6366f1');
+
         const col = document.createElement('div');
         col.className = 'col-md-6 col-xl-4';
         col.innerHTML = `
-            <div class="card h-100 goal-card border-0 shadow-sm rounded-4 p-3 position-relative">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="fs-4 bg-light rounded-circle icon-box">${g.icon}</span>
-                    <button class="btn btn-sm goal-btn-deposit rounded-pill px-3 py-1" onclick="depositToGoal(${g.id})">
-                        + $50
-                    </button>
+            <div class="card h-100 goal-card border-0 shadow-sm rounded-4 p-3 position-relative overflow-hidden" style="background: var(--card-bg);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                     <span class="fs-4 bg-dark bg-opacity-50 rounded-circle icon-box text-white">${g.icon || '🎯'}</span>
+                     ${isComplete ? '<span class="badge bg-success rounded-pill">COMPLETED</span>' :
+                `<button class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" onclick="depositToGoal(${g.id})">+ ${formatMoney(50)}</button>`
+            }
                 </div>
-                <h6 class="fw-bold m-0 mb-1 text-white">${g.name}</h6>
-                <div class="d-flex align-items-end gap-2 mb-2">
-                    <span class="fs-4 fw-bold text-main">${formatMoney(g.current)}</span>
-                    <small class="text-muted mb-1" style="font-size: 11px;">/ ${formatMoney(g.target)}</small>
-                </div>
-                <div class="progress mb-2" style="height: 6px;">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: ${percent}%"></div>
-                </div>
-                <div class="d-flex justify-content-between">
-                   <small class="text-green fw-bold" style="font-size: 10px;">${percent}%</small>
-                   <small class="text-muted" style="font-size: 10px;">On Track</small>
+                
+                <div class="row align-items-center">
+                    <div class="col-7">
+                        <h6 class="fw-bold m-0 mb-1 text-white text-truncate">${g.name}</h6>
+                        <div class="d-flex align-items-baseline gap-1">
+                            <span class="fs-5 fw-bold text-white">${formatMoney(g.current)}</span>
+                            <small class="text-muted" style="font-size: 10px;">/ ${formatMoney(g.target)}</small>
+                        </div>
+                    </div>
+                    <div class="col-5 d-flex justify-content-end position-relative">
+                        <!-- Circular Progress -->
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="${radius}" stroke="#333" stroke-width="6" fill="none" />
+                            <circle cx="40" cy="40" r="${radius}" stroke="${strokeColor}" stroke-width="6" fill="none"
+                                stroke-dasharray="${circumference}"
+                                stroke-dashoffset="${offset}"
+                                stroke-linecap="round"
+                                style="transition: stroke-dashoffset 1s ease-in-out; transform: rotate(-90deg); transform-origin: 50% 50%;" />
+                        </svg>
+                        <div class="position-absolute top-50 start-50 translate-middle text-center">
+                            <small class="fw-bold text-white" style="font-size: 12px;">${percent}%</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
         grid.appendChild(col);
     });
-    updateDonut(totalSaved, totalTarget, totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0);
+} updateDonut(totalSaved, totalTarget, totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0);
 }
 
 function updateDonut(saved, target, percent) {
@@ -2683,8 +2748,27 @@ function calculateSpent(catId) {
     return state.transactions.filter(t => t.category === catId && t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
 }
 
+// Replaced by global formatCurrency
 function formatMoney(num) {
-    return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    return formatCurrency(num);
+}
+
+function depositToGoal(id) {
+    const goal = state.goals.find(g => g.id === id);
+    if (!goal) return;
+
+    goal.current = (goal.current || 0) + 50;
+
+    // Check for completion
+    if (goal.current >= goal.target && !goal.hasCelebrated) {
+        triggerConfetti();
+        goal.hasCelebrated = true; // Prevent infinite confetti on every click after full
+    } else if (goal.current < goal.target) {
+        goal.hasCelebrated = false; // Reset if they withdraw (future proof)
+    }
+
+    saveState();
+    renderGoals(); // Re-render to show progress
 }
 
 window.depositToGoal = depositToGoal;
