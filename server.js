@@ -15,9 +15,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve built assets (Vite output)
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(__dirname, 'dist'), { index: false }));
 // Fallback to root for assets if not in dist (for simple setups)
-app.use(express.static(__dirname));
+app.use(express.static(__dirname, { index: false }));
 
 // Session Setup - Stateless for Cloud/Serverless
 app.use(session({
