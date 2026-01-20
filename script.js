@@ -1564,11 +1564,7 @@ async function handleAddGoal() {
     }
 }
 
-function depositToGoal(id) {
-    const amount = 50;
-    const goal = state.goals.find(g => g.id === id);
-    if (goal) { goal.current += amount; renderGoals(); }
-}
+
 
 function render() {
     try {
@@ -2747,11 +2743,6 @@ function getMerchantLogo(note) {
 
 function calculateSpent(catId) {
     return state.transactions.filter(t => t.category === catId && t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-}
-
-// Replaced by global formatCurrency
-function formatMoney(num) {
-    return formatCurrency(num);
 }
 
 function depositToGoal(id) {

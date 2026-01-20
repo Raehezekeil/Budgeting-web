@@ -13,7 +13,6 @@ export default defineConfig({
             input: {
                 main: resolve(__dirname, 'index.html'),
                 dashboard: resolve(__dirname, 'dashboard.html'),
-                welcome: resolve(__dirname, 'welcome.html'),
                 login: resolve(__dirname, 'login.html')
             }
         }
