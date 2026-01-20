@@ -45,11 +45,14 @@ app.use('/api/data', require('./routes/api'));
 
 // Serve Frontend
 app.get('/', (req, res) => {
-    // Serve login page as the landing page
-    if (require('fs').existsSync(path.join(__dirname, 'dist', 'login.html'))) {
-        res.sendFile(path.join(__dirname, 'dist', 'login.html'));
+    // Force logout on visiting the root URL
+    req.session = null;
+
+    // Serve signup page as the landing page (per user request)
+    if (require('fs').existsSync(path.join(__dirname, 'dist', 'signup.html'))) {
+        res.sendFile(path.join(__dirname, 'dist', 'signup.html'));
     } else {
-        res.sendFile(path.join(__dirname, 'login.html'));
+        res.sendFile(path.join(__dirname, 'signup.html'));
     }
 });
 
