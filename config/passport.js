@@ -7,33 +7,35 @@ passport.use(new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "/api/auth/google/callback"
 },
-    function (accessToken, refreshToken, profile, done) {
+    async function (accessToken, refreshToken, profile, done) {
         const email = profile.emails[0].value;
         const googleId = profile.id;
         const name = profile.displayName;
 
-        // 1. Check if user exists
-        db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
-            if (err) return done(err);
+        try {
+            // 1. Check if user exists
+            const rs = await db.execute({ sql: 'SELECT * FROM users WHERE email = ?', args: [email] });
+            const user = rs.rows[0];
 
             if (user) {
                 // User exists, log them in
-                // Optional: Update social_id if not present
                 if (!user.social_id) {
-                    db.run('UPDATE users SET social_provider = ?, social_id = ? WHERE id = ?',
-                        ['google', googleId, user.id]);
+                    await db.execute({
+                        sql: 'UPDATE users SET social_provider = ?, social_id = ? WHERE id = ?',
+                        args: ['google', googleId, user.id]
+                    });
                 }
                 return done(null, user);
             } else {
                 // Create new user
                 const sql = 'INSERT INTO users (name, email, social_provider, social_id) VALUES (?, ?, ?, ?)';
-                db.run(sql, [name, email, 'google', googleId], function (err) {
-                    if (err) return done(err);
-                    const newUser = { id: this.lastID, name: name, email: email };
-                    done(null, newUser);
-                });
+                const rsInsert = await db.execute({ sql, args: [name, email, 'google', googleId] });
+                const newUser = { id: Number(rsInsert.lastInsertRowid), name: name, email: email };
+                done(null, newUser);
             }
-        });
+        } catch (err) {
+            return done(err);
+        }
     }));
 
 // Serialize user into the sessions
@@ -42,10 +44,13 @@ passport.serializeUser((user, done) => {
 });
 
 // Deserialize user from the sessions
-passport.deserializeUser((id, done) => {
-    db.get('SELECT * FROM users WHERE id = ?', [id], (err, user) => {
-        done(err, user);
-    });
+passport.deserializeUser(async (id, done) => {
+    try {
+        const rs = await db.execute({ sql: 'SELECT * FROM users WHERE id = ?', args: [id] });
+        done(null, rs.rows[0]);
+    } catch (err) {
+        done(err, null);
+    }
 });
 
 module.exports = passport;

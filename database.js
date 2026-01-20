@@ -1,22 +1,23 @@
-const sqlite3 = require('sqlite3').verbose();
+const { createClient } = require('@libsql/client');
 const bcrypt = require('bcrypt');
 const path = require('path');
 
-const dbPath = process.env.DB_PATH || './budget-app.db';
+// Use env var for DB URL (e.g. 'libsql://my-db.turso.io')
+// Or file path for local dev (e.g. 'file:./budget-app.db')
+const url = process.env.TURSO_DATABASE_URL || 'file:./budget-app.db';
+const authToken = process.env.TURSO_AUTH_TOKEN;
 
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error opening database at ' + dbPath, err.message);
-    } else {
-        console.log('Connected to SQLite database at ' + dbPath);
-        initDb();
-    }
+const client = createClient({
+    url,
+    authToken
 });
 
-function initDb() {
-    db.serialize(() => {
-        // Users Table
-        db.run(`CREATE TABLE IF NOT EXISTS users (
+async function initDb() {
+    console.log(`Connected to Database at ${url}`);
+
+    // SQLite/LibSQL allows batch execution
+    const schema = `
+        CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE NOT NULL,
             password TEXT,
@@ -24,52 +25,54 @@ function initDb() {
             social_provider TEXT,
             social_id TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`);
-
-        // Transactions Table
-        db.run(`CREATE TABLE IF NOT EXISTS transactions (
+        );
+        CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
+            user_id INTEGER,
             type TEXT CHECK(type IN ('income', 'expense')),
             amount REAL NOT NULL,
             category TEXT NOT NULL,
             date TEXT NOT NULL,
             notes TEXT,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )`);
-
-        // Budgets Table
-        db.run(`CREATE TABLE IF NOT EXISTS budgets (
+            is_recurring INTEGER DEFAULT 0,
+            frequency TEXT,
+            next_due TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+        CREATE TABLE IF NOT EXISTS budgets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
+            user_id INTEGER,
             category TEXT NOT NULL,
             limit_amount REAL NOT NULL,
             period TEXT DEFAULT 'monthly',
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )`);
-
-        // Goals Table
-        db.run(`CREATE TABLE IF NOT EXISTS goals (
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+        CREATE TABLE IF NOT EXISTS goals (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
+            user_id INTEGER,
             name TEXT NOT NULL,
             target_amount REAL NOT NULL,
             current_amount REAL DEFAULT 0,
             deadline TEXT,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )`);
-
-        // Settings Table
-        db.run(`CREATE TABLE IF NOT EXISTS settings (
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+        CREATE TABLE IF NOT EXISTS settings (
             user_id INTEGER PRIMARY KEY,
             theme TEXT DEFAULT 'light',
             currency TEXT DEFAULT 'USD',
             language TEXT DEFAULT 'en',
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )`);
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+    `;
 
-        console.log('Database schema synced.');
-    });
+    try {
+        await client.executeMultiple(schema);
+        console.log("Database schema initialized.");
+    } catch (err) {
+        console.error("Schema init error:", err);
+    }
 }
 
-module.exports = db;
+initDb();
+
+module.exports = client;

@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
+const cookieSession = require('cookie-session');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
@@ -17,21 +16,23 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session Setup
-app.use(session({
-    store: new SQLiteStore({
-        dir: process.env.DB_DIR || '.',
-        db: 'sessions.db'
-    }),
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false,
-    saveUninitialized: false, // Don't create session until something stored
-    cookie: {
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
-        httpOnly: true,
-        secure: false // Set to true if using HTTPS
-    }
+// Session Setup - Stateless for Cloud/Serverless
+app.use(cookieSession({
+    name: 'session',
+    keys: [process.env.SESSION_SECRET || 'your-secret-key'],
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
 }));
+
+// Mock Passport serialization for cookie-session
+app.use((req, res, next) => {
+    if (req.session && !req.session.regenerate) {
+        req.session.regenerate = (cb) => { cb(); };
+    }
+    if (req.session && !req.session.save) {
+        req.session.save = (cb) => { cb(); };
+    }
+    next();
+});
 
 // Passport Config
 const passport = require('./config/passport');

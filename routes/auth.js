@@ -16,37 +16,41 @@ router.post('/signup', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const sql = `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`;
-        db.run(sql, [name, email, hashedPassword], function (err) {
-            if (err) {
-                if (err.message.includes('UNIQUE constraint failed')) {
-                    return res.status(400).json({ error: 'Email already exists.' });
-                }
-                return res.status(500).json({ error: err.message });
-            }
+        try {
+            const rs = await db.execute({ sql, args: [name, email, hashedPassword] });
+            const userId = rs.lastInsertRowid;
 
-            // Auto-login after signup
-            req.session.userId = this.lastID;
+            // Auto-login (Cookie Session)
+            req.session.userId = Number(userId); // LibSQL returns bigint usually, safe to cast? Yes for now.
             req.session.name = name;
             req.session.email = email;
 
-            res.json({ message: 'Signup successful', user: { id: this.lastID, name, email } });
-        });
+            res.json({ message: 'Signup successful', user: { id: Number(userId), name, email } });
+        } catch (dbErr) {
+            if (dbErr.message.includes('UNIQUE constraint failed')) {
+                return res.status(400).json({ error: 'Email already exists.' });
+            }
+            throw dbErr;
+        }
     } catch (err) {
+        console.error("Signup Error", err);
         res.status(500).json({ error: 'Server error during signup.' });
     }
 });
 
 // Login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ error: 'Email and password required.' });
     }
 
-    const sql = `SELECT * FROM users WHERE email = ?`;
-    db.get(sql, [email], async (err, user) => {
-        if (err) return res.status(500).json({ error: 'Database error.' });
+    try {
+        const sql = `SELECT * FROM users WHERE email = ?`;
+        const rs = await db.execute({ sql, args: [email] });
+        const user = rs.rows[0];
+
         if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
 
         const match = await bcrypt.compare(password, user.password);
@@ -58,16 +62,16 @@ router.post('/login', (req, res) => {
         } else {
             res.status(401).json({ error: 'Invalid credentials.' });
         }
-    });
+    } catch (err) {
+        console.error("Login Error", err);
+        res.status(500).json({ error: 'Database error.' });
+    }
 });
 
 // Logout
 router.post('/logout', (req, res) => {
-    req.session.destroy(err => {
-        if (err) return res.status(500).json({ error: 'Could not log out.' });
-        res.clearCookie('connect.sid'); // Default session cookie name
-        res.json({ message: 'Logged out.' });
-    });
+    req.session = null; // Clear cookie-session
+    res.json({ message: 'Logged out.' });
 });
 
 // Me (Session Check)

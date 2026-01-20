@@ -24,8 +24,10 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.0",
     "bcrypt": "^6.0.0",
     "connect-sqlite3": "^0.9.16",
+    "cookie-session": "^2.1.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
