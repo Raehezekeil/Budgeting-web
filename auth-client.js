@@ -141,8 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const btn = loginForm.querySelector('button[type="submit"]');
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
 
             setLoading(btn, true);
             errorMsg.style.display = 'none';
